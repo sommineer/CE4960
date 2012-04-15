@@ -66,7 +66,7 @@ public class ClientHandler implements Runnable {
 
 		// The number of characters that were read
 		int numChars = 0;
-		
+
 		// Data that was read
 		String data = null;
 
@@ -74,31 +74,40 @@ public class ClientHandler implements Runnable {
 		String fileName = ssftp.getFileName();
 
 		// If the file name is the directory listing, get the directory listing
-		if(fileName.equalsIgnoreCase(DIR_LISTING_FILE)){
+		if(fileName.equalsIgnoreCase(SSFTP.DIR_LISTING_FILE)){
 			data = getDirListing();
 			numChars = data.length();
 			ssftp.setIsEOF(true);
 		}else{
 			// Otherwise, get the file
-			File requestedFile = new File(fileName);
+			File requestedFile = new File(DEFAULT_DIRECTORY + fileName);
 
 			// Check if the file exists
 			if(requestedFile.exists()){
 				try {
-					// If it does, skip to the offset and read the file
+					// If it does, read the file
 					BufferedReader reader = new BufferedReader(new FileReader(requestedFile));
-					reader.skip(ssftp.getOffset());
 
 					char returnChars[] = new char[ssftp.getLength()];
-					numChars = reader.read(returnChars, (int)ssftp.getOffset(), ssftp.getLength());
-					data = new String(returnChars);
 
-					// Set the EOF flag if no characters were read, not the
-					// expected amount of characters were read, or trying to
-					// read the next character returns -1 (exact length)
-					ssftp.setIsEOF(
-							(numChars == -1) || numChars != ssftp.getLength() 
-							|| (reader.read() == -1));
+					int offset = (int)ssftp.getOffset();
+
+					// Skip to the offset
+					if(reader.skip(offset) != offset){
+						ssftp.setIsInvalidRequest(true);
+						System.err.println("Offset is past the end of the file");
+					}else{
+
+						numChars = reader.read(returnChars, 0, ssftp.getLength());
+						data = new String(returnChars);
+
+						// Set the EOF flag if no characters were read, not the
+						// expected amount of characters were read, or trying to
+						// read the next character returns -1 (exact length)
+						ssftp.setIsEOF(
+								(numChars == -1) || numChars != ssftp.getLength() 
+								|| (reader.read() == -1));
+					}
 				} catch (FileNotFoundException e) {
 					ssftp.setIsFileNotFound(true);
 				} catch (IOException e) {
@@ -125,8 +134,8 @@ public class ClientHandler implements Runnable {
 		}
 
 		// Indicate the packet is a response
-		ssftp.setIsRequest(false);
-		
+		ssftp.setIsResponse(true);
+
 		// Send the response back
 		sendResult(ssftp);
 	}
@@ -136,9 +145,10 @@ public class ClientHandler implements Runnable {
 	 * @param ssftp	the response to send back to the client
 	 */
 	private void sendResult(SSFTP ssftp){
-		
+
 		// Assemble the packet
-		DatagramPacket returnPacket = new DatagramPacket(ssftp.toBytes(), 0, ssftp.getNumBytes(), mReceivePacket.getAddress(), mReceivePacket.getPort());
+		int numBytes = ssftp.getNumBytes();
+		DatagramPacket returnPacket = new DatagramPacket(new byte[numBytes], 0, numBytes, mReceivePacket.getAddress(), mReceivePacket.getPort());
 		returnPacket.setData(ssftp.toBytes());
 
 		try {
@@ -149,19 +159,34 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Gets the directory listing of the files
+	 * @return	the directory listing of the files
+	 */
 	private String getDirListing(){
 
+		// Get the root directory and validate that it exists
 		File rootDir = new File(DEFAULT_DIRECTORY);
 
+		if(!rootDir.exists()){
+			throw new IllegalStateException("DEFAULT_DIRECTORY does not exist");
+		}else if(!rootDir.isDirectory()){
+			throw new IllegalStateException(
+					"DEFAULT_DIRECTORY is not a directory");
+		}
+
+		// Get the listing of the files
 		File[] files = rootDir.listFiles(new FileFilter(){
 
 			@Override
 			public boolean accept(File arg0) {
+				// Ignore directories
 				return !arg0.isDirectory();
 			}
 
 		});
 
+		// Build the file list
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 
@@ -179,7 +204,9 @@ public class ClientHandler implements Runnable {
 		return builder.toString();
 	}
 
-	private static final String DIR_LISTING_FILE = ".";
-	private static final String DEFAULT_DIRECTORY = "";
+	/**
+	 * Directory to pull the files from
+	 */
+	private static final String DEFAULT_DIRECTORY = "files/";
 
 }

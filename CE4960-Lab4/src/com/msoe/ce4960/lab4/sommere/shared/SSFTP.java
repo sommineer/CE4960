@@ -8,6 +8,11 @@ package com.msoe.ce4960.lab4.sommere.shared;
 public class SSFTP {
 	
 	/**
+	 * File name used to indicate a directory listing request/response
+	 */
+	public static final String DIR_LISTING_FILE = ".";
+	
+	/**
 	 * Number of bytes the file name may take up
 	 */
 	public static final int FILE_NAME_NUM_BYTES = 32;
@@ -39,19 +44,19 @@ public class SSFTP {
 	private static final int MAX_FILE_NAME_LENGTH = FILE_NAME_NUM_BYTES - 1;
 	
 	/**
+	 * Number of bytes in the header
+	 */
+	public static final int NUM_HEADER_BYTES = 39;
+	
+	/**
 	 * Maximum size of the data that can be returned
 	 */
-	private static final int MAX_LENGTH = (int)Math.pow(2, 16);
+	private static final int MAX_LENGTH = 1024 - NUM_HEADER_BYTES;
 	
 	/**
 	 * Maximum offset of the data that can be returned
 	 */
 	private static final long MAX_OFFSET = (int)Math.pow(2, 32);
-	
-	/**
-	 * Number of bytes in the header
-	 */
-	public static final int NUM_HEADER_BYTES = 39;
 	
 	/**
 	 * Creates an {@link SSFTP} object from a stream of bytes
@@ -97,17 +102,15 @@ public class SSFTP {
 		ssftp.mIsFileNotFound = ((flags & IS_FILE_NOT_FOUND_MASK) == IS_FILE_NOT_FOUND_MASK);
 		ssftp.mIsInvalidRequest = ((flags & IS_INVALID_REQUEST_MASK) == IS_INVALID_REQUEST_MASK);
 		
-		// Increment the position (was pointing to the null terminator before)
-		buffPos++;
+		// Move the pointer to the data
+		buffPos += MAX_FILE_NAME_LENGTH - nameLength + 1;
 		
-		// Copy the data if there is any
-		if(length != 0){
-
-			int numLeft = bytes.length - buffPos;
+		// If it is a response and there is data, copy it
+		if(ssftp.isResponse() && length != 0){
 			
-			byte[] data = new byte[numLeft];
+			byte[] data = new byte[length];
 			
-			System.arraycopy(bytes, buffPos, data, 0, numLeft);
+			System.arraycopy(bytes, buffPos, data, 0, length);
 			
 			ssftp.setData(data);
 		}
@@ -273,6 +276,15 @@ public class SSFTP {
 	}
 	
 	/**
+	 * Gets whether this packet is a response
+	 * @return	{@code true} if this packet is a response, {@code false} if
+	 * 			this packet is a response
+	 */
+	public boolean isResponse(){
+		return !mIsRequest;
+	}
+	
+	/**
 	 * Sets the data 
 	 * @param data	the data
 	 */
@@ -332,6 +344,15 @@ public class SSFTP {
 	 */
 	public void setIsRequest(boolean isRequest){
 		this.mIsRequest = isRequest;
+	}
+	
+	/**
+	 * Sets whether this packet is a response
+	 * @param isResponse	{@code true} if this packet is a response,
+	 * 						{@code false} if this packet is a request
+	 */
+	public void setIsResponse(boolean isResponse){
+		mIsRequest = !isResponse;
 	}
 	
 	/**
