@@ -101,7 +101,8 @@ public class SSFTP {
 		buffPos++;
 		
 		// Copy the data if there is any
-		if(buffPos != bytes.length){
+		if(length != 0){
+
 			int numLeft = bytes.length - buffPos;
 			
 			byte[] data = new byte[numLeft];
@@ -193,12 +194,21 @@ public class SSFTP {
 		mIsFileNotFound = false;
 		mIsInvalidRequest = false;
 		
+		mData = null;
 	}
 	
+	/**
+	 * Gets the data
+	 * @return	the data
+	 */
 	public byte[] getData(){
 		return this.mData;
 	}
 	
+	/**
+	 * Gets the file name
+	 * @return	the file name
+	 */
 	public String getFileName(){
 		return this.mFileName;
 	}
@@ -211,32 +221,72 @@ public class SSFTP {
 		return this.mLength;
 	}
 	
+	/**
+	 * Gets the size of the packet (including the header and data)
+	 * @return	the size of the packet
+	 */
 	public int getNumBytes(){
 		return NUM_HEADER_BYTES + ((mData != null) ? mData.length : 0);
 	}
 	
+	/**
+	 * Gets the offset
+	 * @return	the offset
+	 */
 	public long getOffset(){
 		return this.mOffset;
 	}
 	
+	/**
+	 * Indicates whether the EOF flag has been set
+	 * @return	{@code true} if EOF flag has been set, {@code false} otherwise
+	 */
 	public boolean isEOF(){
 		return mIsEOF;
 	}
+	
+	/**
+	 * Indicates whether the FileNotFound flag has been set
+	 * @return	{@code true} if the FileNotFound flag has been set, 
+	 * 			{@code false} otherwise
+	 */
 	public boolean isFileNotFound(){
 		return this.mIsFileNotFound;
 	}
+	
+	/**
+	 * Indicates whether the InvalidRequest flag has been set
+	 * @return	{@code true} if the InvalidRequest flag has been set, 
+	 * 			{@code false} otherwise
+	 */
 	public boolean isInvaldRequest(){
 		return this.mIsInvalidRequest;
 	} 
 	
+	/**
+	 * Indicates whether this packet is a request or response
+	 * @return	{@code true} if this packet is a request,
+	 * 			{@code false} if this packet is a response
+	 */
 	public boolean isRequest(){
 		return mIsRequest;
 	}
 	
+	/**
+	 * Sets the data 
+	 * @param data	the data
+	 */
 	public void setData(byte data[]){
 		this.mData = data;
 	}
 	
+	/**
+	 * Sets the file name
+	 * @param fileName	the file name
+	 * @throws IllegalArgumentException if {@code fileName} is null, has a
+	 * 									length of 0, or is greater than
+	 * 									{@code MAX_FILE_NAME_LENGTH} characters
+	 */
 	public void setFileName(String fileName){
 		
 		if(fileName == null){
@@ -248,15 +298,38 @@ public class SSFTP {
 		this.mFileName = fileName;
 	}
 	
+	/**
+	 * Sets whether the EOF flag has been set
+	 * @param isEOF	{@code true} if the EOF flag has been set, {@code false}
+	 * 				otherwise
+	 */
 	public void setIsEOF(boolean isEOF){
 		this.mIsEOF = isEOF;
 	}
+	
+	/**
+	 * Sets whether the FileNotFound flag has been set
+	 * @param isFileNotFound	{@code true} if the FileNotFound flag has been 
+	 * 							set, {@code false} otherwise
+	 */
 	public void setIsFileNotFound(boolean isFileNotFound){
 		this.mIsFileNotFound = isFileNotFound;
 	}
+	
+	/**
+	 * Sets whether the InvalidRequest flag has been set
+	 * @param isInvalidRequest	{@code true} if the InvalidRequest flag has been
+	 * 							set, {@code false} otherwise
+	 */
 	public void setIsInvalidRequest(boolean isInvalidRequest){
 		this.mIsInvalidRequest = isInvalidRequest;
 	}
+	
+	/**
+	 * Sets whether the packet is a request or a response
+	 * @param isRequest	{@code true} if this packet is a request, {@code false}
+	 * 					if this packet is a response
+	 */
 	public void setIsRequest(boolean isRequest){
 		this.mIsRequest = isRequest;
 	}
