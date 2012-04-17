@@ -1,5 +1,6 @@
 package com.msoe.ce4960.lab4.sommere.shared;
 
+
 /**
  * Represents a stateless file server packet
  * @author Erik Sommer
@@ -51,7 +52,7 @@ public class SSFTP {
 	/**
 	 * Maximum size of the data that can be returned
 	 */
-	private static final int MAX_LENGTH = 1024 - NUM_HEADER_BYTES;
+	private static final int MAX_LENGTH = 1400;
 	
 	/**
 	 * Maximum offset of the data that can be returned
@@ -93,14 +94,35 @@ public class SSFTP {
 		byte[] nameBytes = new byte[nameLength];
 		System.arraycopy(bytes, nameStartIndex, nameBytes, 0, nameLength);
 		
+		// Validate the file name
+		String fileName = new String(nameBytes);
+		
+		boolean nameInvalid = (fileName.length() == 0);
+		
+		if(nameInvalid){
+			fileName = " ";
+		}
+		
+		// Validate the size
+		boolean sizeInvalid = ((length > MAX_LENGTH) || (length < 0));
+		
+		if(sizeInvalid){
+			length = 0;
+		}
+		
 		// Create the new SSFTP object
-		SSFTP ssftp = new SSFTP(new String(nameBytes), length, offset);
+		SSFTP ssftp = new SSFTP(fileName, length, offset);
 		
 		// Set the flags
 		ssftp.mIsRequest = ((flags & IS_REQUEST_MASK) == IS_REQUEST_MASK);
 		ssftp.mIsEOF = ((flags & IS_EOF_MASK) == IS_EOF_MASK);
 		ssftp.mIsFileNotFound = ((flags & IS_FILE_NOT_FOUND_MASK) == IS_FILE_NOT_FOUND_MASK);
 		ssftp.mIsInvalidRequest = ((flags & IS_INVALID_REQUEST_MASK) == IS_INVALID_REQUEST_MASK);
+		
+		// Set a flag if the file name is not valid
+		if((nameInvalid) || sizeInvalid){
+			ssftp.setIsInvalidRequest(true);
+		}
 		
 		// Move the pointer to the data
 		buffPos += MAX_FILE_NAME_LENGTH - nameLength + 1;
@@ -112,7 +134,7 @@ public class SSFTP {
 			
 			System.arraycopy(bytes, buffPos, data, 0, length);
 			
-			ssftp.setData(data);
+			ssftp.setData(data, length);
 		}
 		
 		return ssftp;
@@ -166,6 +188,11 @@ public class SSFTP {
 	 * Offset to start reading at
 	 */
 	private long mOffset;
+	
+	/**
+	 * Size of the data
+	 */
+	private int mDataSize;
 	
 	/**
 	 * Constructor.  Creates a new request packet
@@ -229,7 +256,7 @@ public class SSFTP {
 	 * @return	the size of the packet
 	 */
 	public int getNumBytes(){
-		return NUM_HEADER_BYTES + ((mData != null) ? mData.length : 0);
+		return NUM_HEADER_BYTES + mDataSize;
 	}
 	
 	/**
@@ -287,9 +314,11 @@ public class SSFTP {
 	/**
 	 * Sets the data 
 	 * @param data	the data
+	 * @param numBytes	the number of bytes to send
 	 */
-	public void setData(byte data[]){
+	public void setData(byte data[], int numBytes){
 		this.mData = data;
+		this.mDataSize = numBytes;
 	}
 	
 	/**
@@ -383,7 +412,7 @@ public class SSFTP {
 	public byte[] toBytes(){
 		
 		// Create the array (size of the header + size of the data)
-		byte returnBytes[] = new byte[NUM_HEADER_BYTES + ((mData != null) ? mData.length : 0)];
+		byte returnBytes[] = new byte[NUM_HEADER_BYTES + mDataSize];
 		int buffPos = 0;
 	
 		// Set the flags
@@ -430,9 +459,31 @@ public class SSFTP {
 		
 		// Copy the data if there is any
 		if(mData != null){
-			System.arraycopy(mData, 0, returnBytes, buffPos, mData.length);
+			System.arraycopy(mData, 0, returnBytes, buffPos, mDataSize);
 		}
 		
 		return returnBytes;
+	}
+	
+	/**
+	 * Prints out the string representation of the packet
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append("Read Back\nIsRequest:\t\t" + String.valueOf(mIsRequest));
+		builder.append("\nIsEOF:\t\t\t" + String.valueOf(mIsEOF));
+		builder.append("\nIsFileNotFound:\t\t" + String.valueOf(mIsFileNotFound));
+		builder.append("\nIsInvalidRequest:\t" + String.valueOf(mIsInvalidRequest));
+		builder.append("\nLength:\t\t\t" + String.valueOf(mLength));
+		builder.append("\nOffset:\t\t\t" + String.valueOf(mOffset));
+		builder.append("\nFileName:\t\t\"" + String.valueOf(mFileName) + "\"");
+
+		if((getData() != null) && !getFileName().equalsIgnoreCase(".")){
+			builder.append("\nDataSize:\t\t" + String.valueOf(mDataSize));
+		}
+		
+		return builder.toString();
 	}
 }

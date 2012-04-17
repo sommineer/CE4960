@@ -1,5 +1,6 @@
 package com.msoe.ce4960.lab4.sommere.client;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -13,14 +14,14 @@ public class Client {
 
 	public static void main(String[] args){
 
-		SSFTP ssftp = new SSFTP("file (2).txt", 985, 100);
+		SSFTP ssftp = new SSFTP("test.txt", 1000, 0);
 
 		DatagramSocket clientSocket;
 		try {
 			clientSocket = new DatagramSocket();
-			InetAddress ipAddress = InetAddress.getByName("192.168.1.8");
+			InetAddress ipAddress = InetAddress.getByName("155.92.69.84");
 
-			DatagramPacket sendPacket = new DatagramPacket(ssftp.toBytes(), ssftp.toBytes().length, ipAddress, 5000);
+			DatagramPacket sendPacket = new DatagramPacket(ssftp.toBytes(), ssftp.toBytes().length, ipAddress, 22222);
 			clientSocket.send(sendPacket);
 			
 			DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
@@ -37,10 +38,12 @@ public class Client {
 			System.out.println("Offset:\t\t\t" + String.valueOf(readBack.getOffset()));
 			System.out.println("FileName:\t\t" + String.valueOf(readBack.getFileName()));
 
-			if(readBack.getData() != null){
+			if((readBack.getData() != null) && !readBack.getFileName().equalsIgnoreCase(".")){
 				System.out.println("----------[Begin Data]----------");
 				System.out.println(new String(readBack.getData()));
 				System.out.println("-----------[End Data]-----------");
+				FileOutputStream writer = new FileOutputStream("rec/" + readBack.getFileName());
+				writer.write(readBack.getData());
 			}else{
 				System.out.println("No Data");
 			}

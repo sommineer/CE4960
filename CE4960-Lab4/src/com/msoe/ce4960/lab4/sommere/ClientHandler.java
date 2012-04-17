@@ -1,12 +1,10 @@
 package com.msoe.ce4960.lab4.sommere;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -63,20 +61,38 @@ public class ClientHandler implements Runnable {
 			System.err.println("Error parsing client packet");
 			return;
 		}
+		
+		System.out.println("---[Received Packet]----");
+		System.out.println(ssftp.toString());
+		System.out.println("--[End Received Packet]--");
 
 		// The number of characters that were read
 		int numChars = 0;
 
 		// Data that was read
-		String data = null;
+		byte[] data = null;
 
 		// Get the file name
 		String fileName = ssftp.getFileName();
 
+		if(ssftp.isInvaldRequest()){
+			// Indicate the packet is a response
+			ssftp.setIsResponse(true);
+
+			// Send the response back
+			sendResult(ssftp);
+			
+			System.out.println("----[Sent Response]----");
+			System.out.println(ssftp.toString());
+			System.out.println("--[End Sent Response]--");
+			
+			return;
+		}
+		
 		// If the file name is the directory listing, get the directory listing
 		if(fileName.equalsIgnoreCase(SSFTP.DIR_LISTING_FILE)){
-			data = getDirListing();
-			numChars = data.length();
+			data = getDirListing().getBytes();
+			numChars = data.length;
 			ssftp.setIsEOF(true);
 		}else{
 			// Otherwise, get the file
@@ -86,9 +102,9 @@ public class ClientHandler implements Runnable {
 			if(requestedFile.exists()){
 				try {
 					// If it does, read the file
-					BufferedReader reader = new BufferedReader(new FileReader(requestedFile));
+					FileInputStream reader = new FileInputStream(requestedFile);
 
-					char returnChars[] = new char[ssftp.getLength()];
+					data = new byte[ssftp.getLength()];
 
 					int offset = (int)ssftp.getOffset();
 
@@ -98,8 +114,7 @@ public class ClientHandler implements Runnable {
 						System.err.println("Offset is past the end of the file");
 					}else{
 
-						numChars = reader.read(returnChars, 0, ssftp.getLength());
-						data = new String(returnChars);
+						numChars = reader.read(data);
 
 						// Set the EOF flag if no characters were read, not the
 						// expected amount of characters were read, or trying to
@@ -124,13 +139,7 @@ public class ClientHandler implements Runnable {
 
 		// Set the data, if there is any
 		if(data != null){
-			try {
-				ssftp.setData(data.getBytes("UTF-8"));
-
-			} catch (UnsupportedEncodingException e) {
-				System.err.println("An error occured encoding the data");
-				ssftp.setIsInvalidRequest(true);
-			}
+				ssftp.setData(data, numChars);
 		}
 
 		// Indicate the packet is a response
@@ -138,6 +147,10 @@ public class ClientHandler implements Runnable {
 
 		// Send the response back
 		sendResult(ssftp);
+		
+		System.out.println("----[Sent Response]----");
+		System.out.println(ssftp.toString());
+		System.out.println("--[End Sent Response]--");
 	}
 
 	/**
