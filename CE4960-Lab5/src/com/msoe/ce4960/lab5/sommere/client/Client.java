@@ -1,4 +1,4 @@
-package com.msoe.ce4960.lab4.sommere.client;
+package com.msoe.ce4960.lab5.sommere.client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import com.msoe.ce4960.lab4.sommere.shared.SSFTP;
+import com.msoe.ce4960.lab5.sommere.shared.SSFTP;
 
 public class Client {
 

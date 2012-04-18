@@ -1,4 +1,4 @@
-package com.msoe.ce4960.lab4.sommere;
+package com.msoe.ce4960.lab5.sommere;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 
-import com.msoe.ce4960.lab4.sommere.shared.SSFTP;
+import com.msoe.ce4960.lab5.sommere.shared.SSFTP;
 
 /**
  * Handles the processing of a client when they connect to the server

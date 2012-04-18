@@ -1,4 +1,4 @@
-package com.msoe.ce4960.lab4.sommere.shared;
+package com.msoe.ce4960.lab5.sommere.shared;
 
 
 /**
