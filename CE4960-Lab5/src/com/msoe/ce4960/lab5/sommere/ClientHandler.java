@@ -153,9 +153,6 @@ public class ClientHandler implements Runnable {
 			}
 		}
 
-		// Set the length
-		ssftp.setLength((numChars != -1) ? numChars : 0);
-
 		// Indicate the packet is a response
 		ssftp.setIsResponse(true);
 
@@ -166,7 +163,6 @@ public class ClientHandler implements Runnable {
 			sendData(data);
 		}
 		
-
 		System.out.println("----[Sent Response]----");
 		System.out.println(ssftp.toString());
 		System.out.println("--[End Sent Response]--");

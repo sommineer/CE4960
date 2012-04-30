@@ -6,11 +6,19 @@
     android:paddingLeft="8dp"
     android:paddingRight="8dp" >
 
-    <fragment
-        android:id="@+id/list"
-        android:name="com.msoe.ce4960.sommere.lab5.FileIndexFragment"
+    <ListView
+        android:id="@id/android:list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:background="#00FF00"
+        android:drawSelectorOnTop="false" />
+
+    <TextView
+        android:id="@id/android:empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF0000"
+        android:text="No data" />
 
 </LinearLayout>
