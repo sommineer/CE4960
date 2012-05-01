@@ -52,7 +52,7 @@ public class SSFTP {
 	/**
 	 * Maximum size of the data that can be returned
 	 */
-	private static final int MAX_LENGTH = 1400;
+	private static final int MAX_LENGTH = 14000;
 	
 	/**
 	 * Maximum offset of the data that can be returned

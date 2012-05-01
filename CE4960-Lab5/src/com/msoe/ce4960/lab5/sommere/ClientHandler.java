@@ -116,12 +116,24 @@ public class ClientHandler implements Runnable {
 		// Init the variables needed to hold the data info
 		byte[] data = null;
 		int numChars = -1;
-
+		
+		
 		// If the file name is the directory listing, get the directory listing
 		if(fileName.equalsIgnoreCase(SSFTP.DIR_LISTING_FILE)){
 			data = getDirListing().getBytes();
 			numChars = data.length;
 			ssftp.setIsEOF(true);
+			
+			// Indicate the packet is a response
+			ssftp.setIsResponse(true);
+
+			// Send the response and data back
+			sendData(ssftp.toBytes());
+			
+			if(data != null){
+				sendData(data);
+			}
+			
 		}else{
 			// Otherwise, get the file
 			File requestedFile = new File(DEFAULT_DIRECTORY + fileName);
@@ -129,11 +141,27 @@ public class ClientHandler implements Runnable {
 			// Check if the file exists
 			if(requestedFile.exists()){
 				try {
+					// Indicate the packet is a response
+					ssftp.setIsResponse(true);
+
+					// Send the response and data back
+					sendData(ssftp.toBytes());
+					
+					
 					// If it does, read the file
 					FileInputStream reader = new FileInputStream(requestedFile);
 
 					data = new byte[ssftp.getLength()];
-					numChars = reader.read(data);
+					
+					int numRead = 0;
+					int total = 0;
+					
+					while((numRead = reader.read(data)) != -1){
+						sendData(data, numRead);
+						total += numRead;
+					}
+					
+					System.out.println("Num Bytes Read: " + total);
 
 					// Set the EOF flag if no characters were read, not the
 					// expected amount of characters were read, or trying to
@@ -148,19 +176,18 @@ public class ClientHandler implements Runnable {
 					System.err.println("An error occured reading the file");
 					ssftp.setIsInvalidRequest(true);
 				}
+				
+				
 			}else{
 				ssftp.setIsFileNotFound(true);
+				
+				// Indicate the packet is a response
+				ssftp.setIsResponse(true);
+
+				// Send the response and data back
+				sendData(ssftp.toBytes());
+				
 			}
-		}
-
-		// Indicate the packet is a response
-		ssftp.setIsResponse(true);
-
-		// Send the response and data back
-		sendData(ssftp.toBytes());
-		
-		if(data != null){
-			sendData(data);
 		}
 		
 		System.out.println("----[Sent Response]----");
@@ -190,11 +217,15 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+	private void sendData(byte[] data){
+		sendData(data, data.length);
+	}
+	
 	/**
 	 * Sends the data to the client
 	 * @param data	the array of data to send to the client
 	 */
-	private void sendData(byte[] data){
+	private void sendData(byte[] data, int numBytes){
 		
 		try {
 			DataOutputStream output = mOutputStream;

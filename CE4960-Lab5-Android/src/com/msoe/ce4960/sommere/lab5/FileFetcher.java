@@ -1,5 +1,6 @@
 package com.msoe.ce4960.sommere.lab5;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 		
 		String fileName = params[0];
 		
-		SSFTP ssftp = new SSFTP(fileName, 1000, 0);
+		SSFTP ssftp = new SSFTP(fileName, 10000, 0);
 
 		Socket clientSocket;
 
@@ -69,18 +70,17 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 
 			// The response is as expected, start reading the file
 			DataInputStream networkInput = new DataInputStream(clientSocket.getInputStream());
-
-			data = new byte[ssftp.getLength()];
-
-			int numBytes = networkInput.read(data);
-
-			try{
-				while(numBytes != -1){
-					numBytes = networkInput.read(data);
-				}
-			}catch(IOException e){
-				System.out.println("Server closed connection");
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			
+			
+			byte[] buffer = new byte[1000];
+			int numRead = 0;
+			
+			while((numRead = networkInput.read(buffer)) != -1){
+				out.write(buffer, 0, numRead);
 			}
+			
+			data = out.toByteArray();
 
 			// Close the streams
 			try {
