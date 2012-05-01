@@ -4,5 +4,5 @@
     <string name="hello">Hello World!</string>
     <string name="app_name">CE4960-Lab5-Android</string>
     <string name="menu_refresh">Refresh</string>
-
+	<string name="menu_edit">Edit Server</string>
 </resources>
