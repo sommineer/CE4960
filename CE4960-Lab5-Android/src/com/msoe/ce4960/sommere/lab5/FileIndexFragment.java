@@ -16,8 +16,6 @@ public class FileIndexFragment extends ListFragment implements FileFetcherListen
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		new FileFetcher(this).execute(".");
 	}
 
 	public void onFileFetched(String fileName, byte[] data) {
@@ -43,6 +41,7 @@ public class FileIndexFragment extends ListFragment implements FileFetcherListen
 		super.onActivityCreated(savedInstanceState);
 		
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		new FileFetcher(this).execute(".");
 	}
 	
 	@Override
@@ -51,6 +50,10 @@ public class FileIndexFragment extends ListFragment implements FileFetcherListen
 		intent.setClass(getActivity(), ViewerActivity.class);
 		intent.putExtra("fileName", (String)getListAdapter().getItem(position));
 		startActivity(intent);
+	}
+	
+	public void refresh(){
+		new FileFetcher(this).execute(".");
 	}
 
 }
