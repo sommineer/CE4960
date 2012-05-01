@@ -1,5 +1,7 @@
 package com.msoe.ce4960.sommere.lab5;
 
+import java.net.InetAddress;
+
 import com.msoe.ce4960.sommere.lab5.FileFetcher.FileFetcherListener;
 
 import android.app.ListFragment;
@@ -41,7 +43,7 @@ public class FileIndexFragment extends ListFragment implements FileFetcherListen
 		super.onActivityCreated(savedInstanceState);
 		
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		new FileFetcher(this).execute(".");
+		new FileFetcher(this, serverAddress).execute(".");
 	}
 	
 	@Override
@@ -49,11 +51,17 @@ public class FileIndexFragment extends ListFragment implements FileFetcherListen
 		Intent intent = new Intent();
 		intent.setClass(getActivity(), ViewerActivity.class);
 		intent.putExtra("fileName", (String)getListAdapter().getItem(position));
+		intent.putExtra("ipAddress", serverAddress.getHostAddress());
 		startActivity(intent);
 	}
 	
 	public void refresh(){
-		new FileFetcher(this).execute(".");
+		new FileFetcher(this, serverAddress).execute(".");
 	}
 
+	public void setIP(InetAddress serverAddress) {
+		this.serverAddress = serverAddress;
+	}
+
+	private InetAddress serverAddress;
 }

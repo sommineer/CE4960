@@ -4,12 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -27,7 +30,12 @@ public class ViewerActivity extends Activity implements FileFetcherListener {
 		mFileName =  getIntent().getStringExtra("fileName");
 		setContentView(R.layout.viewer_activity);
 		Toast.makeText(this, "Fetching: " + mFileName, Toast.LENGTH_LONG).show();
-		new FileFetcher(this).execute(mFileName);
+		try {
+			new FileFetcher(this, InetAddress.getByName(getIntent().getStringExtra("ipAddress"))).execute(mFileName);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void onFileFetched(String fileName, byte[] data) {
@@ -92,6 +100,11 @@ public class ViewerActivity extends Activity implements FileFetcherListener {
 			fragmentTransaction.add(R.id.viewer_container, imageFragment);
 			fragmentTransaction.commit();
 		}else{
+			Intent intent = new Intent();
+			intent.setAction(android.content.Intent.ACTION_VIEW);
+			intent.setData(Uri.fromFile(file));
+			startActivity(intent);
+			finish();
 			Toast.makeText(getApplicationContext(), "Unsupported file type: \"" + extension + "\"", Toast.LENGTH_SHORT);
 		}
 
