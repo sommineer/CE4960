@@ -29,10 +29,12 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 	
 	}
 	
+	private InetAddress serverAddress;
 	private FileFetcherListener mListener;
 	
-	public FileFetcher(FileFetcherListener listener){
+	public FileFetcher(FileFetcherListener listener, InetAddress serverAddress){
 		mListener = listener;
+		this.serverAddress = serverAddress;
 	}
 	
 	@Override
@@ -47,7 +49,7 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 		byte data[] = null;
 		
 		try{
-			clientSocket = new Socket(InetAddress.getByName("192.168.1.8"), 22222);
+			clientSocket = new Socket(serverAddress, 22222);
 			DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
 			outputStream.write(ssftp.toBytes());
 
@@ -123,7 +125,4 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 	protected void onPostExecute(byte[] result) {
 		mListener.onFileFetched(mFileName, result);
 	}
-
-
-
 }
