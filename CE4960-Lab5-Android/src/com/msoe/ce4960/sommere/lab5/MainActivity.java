@@ -35,6 +35,7 @@ public class MainActivity extends Activity{
 		}
 		super.onAttachFragment(fragment);
 	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item.getItemId() == R.id.menu_refresh){
