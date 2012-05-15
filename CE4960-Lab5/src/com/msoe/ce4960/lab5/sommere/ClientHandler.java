@@ -147,7 +147,6 @@ public class ClientHandler implements Runnable {
 					// Send the response and data back
 					sendData(ssftp.toBytes());
 					
-					
 					// If it does, read the file
 					FileInputStream reader = new FileInputStream(requestedFile);
 

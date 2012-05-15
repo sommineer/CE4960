@@ -9,9 +9,7 @@ import java.net.InetAddress;
 
 public class HTTPRequest {
 
-	public static HTTPRequest fromStream(InputStream is) throws IOException{
-		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+	public static HTTPRequest fromStream(BufferedReader reader) throws IOException{
 		
 		String request;
 		
@@ -57,6 +55,8 @@ public class HTTPRequest {
 					returnRequest.mConnection = value;
 				}else if(key.equalsIgnoreCase(KEY_CACHE_CONTROL)){
 					returnRequest.mCacheControl = value;
+				}else if(key.equalsIgnoreCase(KEY_CONTENT_LENGTH)){
+					returnRequest.mLength = Integer.parseInt(value);
 				}
 			}
 			
@@ -82,10 +82,12 @@ public class HTTPRequest {
 			fileName = "index.html";
 		}
 		
-		returnRequest.file = new File(fileName);
+		returnRequest.file = new File(FILE_ROOT + fileName);
 		returnRequest.mProtocol = protocol;
 	}
 
+	private static final String FILE_ROOT = "files/";
+	
 	public int mPort;
 	public String mProtocol;
 	public HTTPRequestType mRequestType;
@@ -97,6 +99,7 @@ public class HTTPRequest {
 	public String mConnection;
 	public String mCacheControl;
 	public File file;
+	public int mLength;
 	
 	private static final String KEY_HOST = "Host";
 	private static final String KEY_USER_AGENT = "User-Agent";
@@ -105,6 +108,7 @@ public class HTTPRequest {
 	private static final String KEY_ACCEPT_ENCODING = "Accept-Encoding";
 	private static final String KEY_CONNECTION = "Connection";
 	private static final String KEY_CACHE_CONTROL = "Cache-Control";
+	private static final String KEY_CONTENT_LENGTH = "Content-Length";
 
 	
 	
