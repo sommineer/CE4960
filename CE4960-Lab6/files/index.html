@@ -1,5 +1,44 @@
-<form method="POST" action="process">
-<input type="radio" name="sex" value="male" /> Male<br />
-<input type="radio" name="sex" value="female" /> Female
-<input type="submit" name="Submit" value="Submit" />
-</form> 
+<h1>CE4960 - Lab6</h1>
+<h2>Erik's Demo</h2>
+<p>Please enter in the following personal information:</p>
+
+
+<form method="POST" action="update">
+    <div>
+         <label for="name">Text Input:</label>
+         <input type="text" name="name" id="name" value="" tabindex="1" />
+    </div>
+
+    <div>
+         <h4>Radio Button Choice</h4>
+
+         <label for="radio-choice-1">Choice 1</label>
+         <input type="radio" name="radio-choice-1" id="radio-choice-1" tabindex="2" value="Radio Choice 1" />
+
+		 <label for="radio-choice-2">Choice 2</label>
+         <input type="radio" name="radio-choice-1" id="radio-choice-2" tabindex="3" value="Radio Choice 2" />
+    </div>
+
+	<div>
+		<label for="select-choice">Select Dropdown Choice:</label>
+		<select name="select-choice">
+			<option value="Select Choice 1">Select Choice 1</option>
+			<option value="Select Choice 2">Select Choice 2</option>
+			<option value="Select Choice 3">Select Choice 3</option>
+		</select>
+	</div>
+
+	<div>
+		<label for="textarea">Textarea:</label>
+		<textarea cols="40" rows="8" name="textarea"></textarea>
+	</div>
+
+	<div>
+	    <label for="checkbox">Checkbox:</label>
+		<input type="checkbox" name="checkbox" />
+    </div>
+
+	<div>
+	    <input type="submit" value="Submit" />
+    </div>
+</form>

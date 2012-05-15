@@ -44,24 +44,47 @@ public class ClientHandler implements Runnable {
 
 	private void processPOST(HTTPRequest request, BufferedReader reader, DataOutputStream os) throws IOException {
 		System.out.println("Processing post");
-		
+
 		char buff[] = new char[request.mLength];
-		
+
 		reader.read(buff);
-		
+
 		System.out.println(buff);
-		
+
 		String params[] = (new String(buff)).split("&");
 		Map<String, String> map = new HashMap<String, String>();
-		
+
 		for(String param : params){
 			String keyvalue[] = param.split("=");
-			map.put(keyvalue[0], keyvalue[1]);
+
+			if(keyvalue.length > 1){
+				map.put(keyvalue[0], keyvalue[1]);
+			}else{
+				map.put(keyvalue[0], null);
+			}
 		}
+
+		displayOutput(map, os);
+	}
+
+	private void displayOutput(Map<String, String> map, DataOutputStream os) throws IOException {
 		
-		System.out.println(map);
-		System.out.println(map.keySet());
-		System.out.println(map.entrySet());
+		StringBuilder responseBuilder = new StringBuilder();
+		responseBuilder.append("HTTP/1.1 200 OK\n");
+		responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
+		
+		
+		StringBuilder bodyBuilder = new StringBuilder();
+		bodyBuilder.append("<p><strong>Text Input</strong>: " + map.get("textarea"));
+		bodyBuilder.append("<p><strong>Radio Button Choice</strong>: " + map.get("radio-choice-1"));
+		bodyBuilder.append("<p><strong>Dropdown Choice</strong>: " + map.get("select-choic"));
+		bodyBuilder.append("<p><strong>Text Area</strong>: " + map.get("textarea"));
+		bodyBuilder.append("<p><strong>Value is checked</strong>: " + (map.containsKey("checkbox") ? (map.get("checkbox").equals("on") ? "Yes" : "No") : "No"));
+		
+		responseBuilder.append("Content-Length: " + bodyBuilder.toString().getBytes().length + "\n\n");
+		
+		os.write(responseBuilder.toString().getBytes());
+		os.write(bodyBuilder.toString().getBytes());
 	}
 
 	private void processGET(HTTPRequest request, OutputStream os) throws IOException {

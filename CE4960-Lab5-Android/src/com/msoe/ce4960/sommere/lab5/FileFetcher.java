@@ -42,7 +42,7 @@ public class FileFetcher extends AsyncTask<String, Void, byte[]> {
 		
 		String fileName = params[0];
 		
-		SSFTP ssftp = new SSFTP(fileName, 10000, 0);
+		SSFTP ssftp = new SSFTP(fileName, 5000, 0);
 
 		Socket clientSocket;
 

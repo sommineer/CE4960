@@ -23,7 +23,7 @@ public class MainActivity extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		try {
-			serverAddress = InetAddress.getByName("155.92.67.104");
+			serverAddress = InetAddress.getByName("155.92.64.144");
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
