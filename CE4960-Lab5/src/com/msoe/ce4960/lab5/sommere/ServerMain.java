@@ -7,14 +7,11 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
- * Runs a state-less file server that responds to UDP requests.  Main Program
+ * Runs a state-less file server that responds to TCP requests.  Main Program
  * 
  * Experiences:
- * Overall this lab wasn't all that difficult.  Working in java with the lack
- * of unsigned integers made things a bit more complicated.  You essentially
- * have to store them in double the storage space, so the 16-bit integer was
- * actually stored as a 32-bit integer.  Other than that though, no other
- * major difficulties were encountered
+ * This lab wasn't difficult at all as TCP is much easier to work with than UDP,
+ * at least on the layer that Java uses it.
  * 
  * Testing:
  * This program was tested with a rough client that was written at the same

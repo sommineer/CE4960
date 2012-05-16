@@ -9,6 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 
+import javax.swing.text.NumberFormatter;
+
 import com.msoe.ce4960.lab5.sommere.shared.SSFTP;
 
 /**
@@ -135,6 +137,9 @@ public class ClientHandler implements Runnable {
 			}
 			
 		}else{
+			
+			long startTime = System.nanoTime();
+			
 			// Otherwise, get the file
 			File requestedFile = new File(DEFAULT_DIRECTORY + fileName);
 
@@ -187,6 +192,10 @@ public class ClientHandler implements Runnable {
 				sendData(ssftp.toBytes());
 				
 			}
+			
+			long delta = System.nanoTime() - startTime;
+			
+			System.out.println("Time to transfer: " + delta + "ns");
 		}
 		
 		System.out.println("----[Sent Response]----");

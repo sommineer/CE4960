@@ -12,45 +12,66 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+/**
+ * Display an image that has been received
+ * @author Erik Sommer
+ *
+ */
 public class ImageFragment extends Fragment {
 
+	/**
+	 * Image file to display
+	 */
 	private File mFile;
 
+	/**
+	 * Constructor.
+	 * @param file	the file to display
+	 */
 	public ImageFragment(File file){
 		mFile = file;
 
 	}
 
+	/**
+	 * Creates the view with the image
+	 * @param inflater				the inflater used to inflate the view
+	 * @param container				the container for the view
+	 * @param savedInstanceState	the state to restore
+	 * @return	the view to display
+	 */
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
+		// Create the view
 		View view = inflater.inflate(R.layout.image_fragment, null);
 
 		boolean mExternalStorageAvailable = false;
-		boolean mExternalStorageWriteable = false;
 		String state = Environment.getExternalStorageState();
 
+		// Determine whether the image can be read
 		if (Environment.MEDIA_MOUNTED.equals(state)) {
-			// We can read and write the media
-			mExternalStorageAvailable = mExternalStorageWriteable = true;
-		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			// We can only read the media
+			// Data can be read and written
 			mExternalStorageAvailable = true;
-			mExternalStorageWriteable = false;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			// Data can only be read
+			mExternalStorageAvailable = true;
 		} else {
-			// Something else is wrong. It may be one of many other states, but all we need
-			//  to know is we can neither read nor write
-			mExternalStorageAvailable = mExternalStorageWriteable = false;
+			// Data can't be read or written
+			mExternalStorageAvailable = false;
 		}
 
+		// If getting the file is possible
 		if(mExternalStorageAvailable){
+			
+			// Get and decode the file
 			File file = mFile;
-
 			Bitmap myBitMap = BitmapFactory.decodeFile(file.getAbsolutePath());
+			
+			// Display the file
 			((ImageView)view.findViewById(R.id.imageview_fragment)).setImageBitmap(myBitMap);
 		}
-
 
 		return view;
 	}

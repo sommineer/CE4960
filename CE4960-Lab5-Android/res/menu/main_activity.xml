@@ -7,7 +7,7 @@
         android:showAsAction="ifRoom|withText"
         android:title="@string/menu_refresh"/>
     <item
-        android:id="@+id/menu_edi"
+        android:id="@+id/menu_edit"
         android:icon="@android:drawable/ic_menu_edit"
         android:showAsAction="ifRoom|withText"
         android:title="@string/menu_edit"/>

@@ -5,4 +5,6 @@
     <string name="app_name">CE4960-Lab5-Android</string>
     <string name="menu_refresh">Refresh</string>
 	<string name="menu_edit">Edit Server</string>
+	<string name="no_data">No Data</string>
+	<string name="received_file">Received file</string>
 </resources>

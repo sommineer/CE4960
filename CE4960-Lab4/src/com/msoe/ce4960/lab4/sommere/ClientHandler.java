@@ -95,6 +95,8 @@ public class ClientHandler implements Runnable {
 			numChars = data.length;
 			ssftp.setIsEOF(true);
 		}else{
+			long startTime = System.nanoTime();
+			
 			// Otherwise, get the file
 			File requestedFile = new File(DEFAULT_DIRECTORY + fileName);
 
@@ -129,6 +131,11 @@ public class ClientHandler implements Runnable {
 					System.err.println("An error occured reading the file");
 					ssftp.setIsInvalidRequest(true);
 				}
+				
+				long delta = System.nanoTime() - startTime;
+				
+				System.out.println("Time to transfer: " + delta + "ns");
+				
 			}else{
 				ssftp.setIsFileNotFound(true);
 			}
