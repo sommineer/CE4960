@@ -13,44 +13,140 @@ import java.util.Map;
 
 import com.msoe.ce4960.lab6.HTTPRequest.HTTPRequestType;
 
+/**
+ * Handles the client requests that are sent to the server
+ * @author Erik Sommer
+ *
+ */
 public class ClientHandler implements Runnable {
 
-	@Override
-	public void run() {
+	/**
+	 * Size of the buffer to use when writing out the file
+	 */
+	private static final int BUFFER_SIZE = 1024;
 
+	/**
+	 * Socket that the client is connected from
+	 */
+	Socket mSocket;
 
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
-			HTTPRequest request = HTTPRequest.fromStream(reader);
+	/**
+	 * Constructor
+	 * @param socket	the socket that the client is connected form
+	 * @throws IllegalArgumentException	if {@code socket} is {@code null}
+	 */
+	public ClientHandler(Socket socket){
 
-			DataOutputStream os = new DataOutputStream(mSocket.getOutputStream());
-
-			if(request.mRequestType == HTTPRequestType.GET){
-				processGET(request, os);
-			}else if(request.mRequestType == HTTPRequestType.POST){
-				processPOST(request, reader, os);
-			}
-
-			os.flush();
-			os.close();
-
-			mSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Parameter validation
+		if(socket == null){
+			throw new IllegalArgumentException("socket is null");
 		}
 
+		mSocket = socket;
 	}
 
-	private void processPOST(HTTPRequest request, BufferedReader reader, DataOutputStream os) throws IOException {
+	/**
+	 * Displays the POST output in a human-readable form
+	 * @param map	the map that contains the post data
+	 * @param os	the output stream to write the data to
+	 * @throws IOException	if there was an error getting the output stream
+	 */
+	private void displayOutput(Map<String, String> map, DataOutputStream os) 
+			throws IOException {
+
+		// Build the response header
+		StringBuilder responseBuilder = new StringBuilder();
+		responseBuilder.append("HTTP/1.1 200 OK\n");
+		responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
+
+		// Build the response body
+		StringBuilder bodyBuilder = new StringBuilder();
+		bodyBuilder.append("<p><strong>Text Input</strong>: " 
+				+ map.get("textarea"));
+		bodyBuilder.append("<p><strong>Radio Button Choice</strong>: " 
+				+ map.get("radio-choice-1"));
+		bodyBuilder.append("<p><strong>Dropdown Choice</strong>: " 
+				+ map.get("select-choic"));
+		bodyBuilder.append("<p><strong>Text Area</strong>: "
+				+ map.get("textarea"));
+		bodyBuilder.append("<p><strong>Value is checked</strong>: " 
+				+ (map.containsKey("checkbox") ? (map.get("checkbox").equals("on") ? "Yes" : "No") : "No"));
+
+		// Set the response header content-length
+		responseBuilder.append("Content-Length: " + bodyBuilder.toString().getBytes().length + "\n\n");
+
+		// Write the header followed by the content
+		os.write(responseBuilder.toString().getBytes());
+		os.write(bodyBuilder.toString().getBytes());
+	}
+
+	/**
+	 * Processes a GET request for a file
+	 * @param request	the request
+	 * @param os		output stream to write data to
+	 * @throws IOException	if there was an error reading or witing to the streams
+	 */
+	private void processGET(HTTPRequest request, OutputStream os) throws IOException {
+
+		// Log that the server is processing a GET request
+		System.out.println("Sending get");
+
+		StringBuilder responseBuilder = new StringBuilder();
+
+		File requestFile = request.getFile();
+
+		if(!requestFile.exists()){
+			// Send a 404 header if the file is not found
+			responseBuilder.append("HTTP/1.1 404 FILE NOT FOUND\n");
+			responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
+			responseBuilder.append("Content-Length: 0\n\n");
+		}else{
+			// Send the 200 header if the file is found
+			responseBuilder.append("HTTP/1.1 200 OK\n");
+			responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
+			responseBuilder.append("Content-Length: " + requestFile.length() + "\n\n");
+		}
+
+		// Write the header
+		byte respBuff[] = responseBuilder.toString().getBytes();
+		os.write(respBuff);
+
+		if(!requestFile.exists()){
+			// Don't return any more data if the file doesn't exist
+			return;
+		}
+
+		// Open the file for reading and write out the data
+		FileInputStream reader = new FileInputStream(requestFile);
+
+		byte buff[] = new byte[BUFFER_SIZE];
+		int numRead = reader.read(buff);;
+
+		while(numRead > 0){
+
+			os.write(buff, 0, numRead);
+			numRead = reader.read(buff);
+		}
+	}
+
+	/**
+	 * Processes a POST request
+	 * @param request	the request that was received
+	 * @param reader	reader to read data from
+	 * @param os		output to write results to
+	 * @throws IOException	if there was an error reading or writing to the streams
+	 */
+	private void processPOST(HTTPRequest request, BufferedReader reader, 
+			DataOutputStream os) throws IOException {
+
+		// Log that the server is processing a POST request
 		System.out.println("Processing post");
 
-		char buff[] = new char[request.mLength];
-
+		// Read in the amount of data specified in the request
+		char buff[] = new char[request.getLength()];
 		reader.read(buff);
 
-		System.out.println(buff);
-
+		// Split the POST data into key-value pairs
 		String params[] = (new String(buff)).split("&");
 		Map<String, String> map = new HashMap<String, String>();
 
@@ -64,73 +160,45 @@ public class ClientHandler implements Runnable {
 			}
 		}
 
+		// Display the values
 		displayOutput(map, os);
 	}
 
-	private void displayOutput(Map<String, String> map, DataOutputStream os) throws IOException {
-		
-		StringBuilder responseBuilder = new StringBuilder();
-		responseBuilder.append("HTTP/1.1 200 OK\n");
-		responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
-		
-		
-		StringBuilder bodyBuilder = new StringBuilder();
-		bodyBuilder.append("<p><strong>Text Input</strong>: " + map.get("textarea"));
-		bodyBuilder.append("<p><strong>Radio Button Choice</strong>: " + map.get("radio-choice-1"));
-		bodyBuilder.append("<p><strong>Dropdown Choice</strong>: " + map.get("select-choic"));
-		bodyBuilder.append("<p><strong>Text Area</strong>: " + map.get("textarea"));
-		bodyBuilder.append("<p><strong>Value is checked</strong>: " + (map.containsKey("checkbox") ? (map.get("checkbox").equals("on") ? "Yes" : "No") : "No"));
-		
-		responseBuilder.append("Content-Length: " + bodyBuilder.toString().getBytes().length + "\n\n");
-		
-		os.write(responseBuilder.toString().getBytes());
-		os.write(bodyBuilder.toString().getBytes());
-	}
+	/**
+	 * Executed by the thread to handle the request
+	 */
+	@Override
+	public void run() {
 
-	private void processGET(HTTPRequest request, OutputStream os) throws IOException {
-		System.out.println("Sending get");
+		try {
+			// Read and parse the request
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					mSocket.getInputStream()));
+			HTTPRequest request = HTTPRequest.fromStream(reader);
 
-		StringBuilder responseBuilder = new StringBuilder();
+			// Create an output stream and process the request
+			DataOutputStream os = new DataOutputStream(mSocket.getOutputStream());
+			HTTPRequestType requestType = request.getRequestType();
 
-		if(!request.file.exists()){
-			responseBuilder.append("HTTP/1.1 404 FILE NOT FOUND\n");
-			responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
-			responseBuilder.append("Content-Length: 0\n\n");
-		}else{
-			responseBuilder.append("HTTP/1.1 200 OK\n");
-			responseBuilder.append("Content-Type: text/html; charset=utf-8\n");
-			responseBuilder.append("Content-Length: " + request.file.length() + "\n\n");
-		}
-
-		byte respBuff[] = responseBuilder.toString().getBytes();
-		os.write(respBuff);
-
-		if(!request.file.exists()){
-			return;
-		}
-
-		if(request.file.getName().equals(INPUT_PROCESSOR)){
-			os.write("PROCESSED!".getBytes());
-		}else{
-			FileInputStream reader = new FileInputStream(request.file);
-
-			byte buff[] = new byte[1024];
-
-			int numRead = reader.read(buff);;
-
-			while(numRead > 0){
-
-				os.write(buff, 0, numRead);
-				numRead = reader.read(buff);
+			if(requestType == HTTPRequestType.GET){
+				processGET(request, os);
+			}else if(requestType == HTTPRequestType.POST){
+				processPOST(request, reader, os);
+			}else{
+				System.err.println("Unsupported request type received");
 			}
+
+			// Flush and close the output stream.
+			os.flush();
+			os.close();
+
+			// Close the connection once transmission is complete
+			mSocket.close();
+		} catch (IOException e) {
+			System.err.println("I/O exception occured reading data");
+			e.printStackTrace();
 		}
+
 	}
 
-	Socket mSocket;
-
-	public ClientHandler(Socket socket){
-		mSocket = socket;
-	}
-
-	private static final String INPUT_PROCESSOR = (new File("files/process")).getName();
 }
